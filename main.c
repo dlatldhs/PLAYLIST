@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <direct.h>
 //= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =//
 int n;
 typedef char* DataType;
@@ -31,10 +32,32 @@ typedef struct Queue{
 	Node* rear;
 }Queue;
 
+void menu()
+{
+	char path[1000];
+	printf("\n메뉴\n");
+	printf("1. 플레이 리스트에 노래 추가\n");
+	printf("2. 플레이 리스트 삭제\n");
+	printf("3. 플레이 리스트 보기\n");
+	printf("4. 플레이 리스트 정렬\n");
+	printf("5. 프로그램 종료\n");
+	
+	printf("폴더를 생성할 경로를 입력해주세요(필수 경로 - C:/User/SW~~~~):  ");
+	scanf("%s",path);
+	int result = mkdir(path);
+	if(result==-1) {
+		printf("폴더 생성 실패");
+		return ;
+	} 
+	else{
+		printf("하고자 하는 작업을 선택해 주세요(숫자)...");
+	} 	
+}
+
 int main(){
 	Queue* q = createQueue();
 	while(1){
-		printf("\n메뉴\n1. 플레이 리스트에 노래 추가\n2. 플레이 리스트 삭제\n3. 플레이 리스트 보기\n4. 플레이 리스트 정렬\n5. 프로그램 종료\n하고자하는 작업을 선택해 주세요(숫자)....");
+		menu();
 		n=0;
 		scanf("%d",&n);
 		if(n==1){// 노래 넣는 기능
@@ -50,31 +73,28 @@ int main(){
 			printf("노래가 성공적으로 추가되었습니다!\n");
 		}else if(n==2){// 노래 삭제 기능
 			dequeue(q);
-			FILE *fp = fopen("C:/Users/SW2127/Desktop/all/make_me/algorithm/playlist.txt", "r+");
-			char buf[256];
-			rewind(fp);
+			FILE *fp = fopen("C:/Users/SW2127/Desktop/all/make_me/algorithm/playlist.txt", "r");
+			FILE *fp2 = fopen("C:/Users/SW2127/Desktop/all/make_me/algorithm/playlist2.txt", "w");	
+			char old[] = "C:/Users/SW2127/Desktop/all/make_me/algorithm/playlist.txt";
+			char n[] = "C:/Users/SW2127/Desktop/all/make_me/algorithm/playlist2.txt";
+			char data[100],buf[100];
+			
+			fgets(data,100,fp);
+			while(1)
 			{
-	        	long seek, start;
-	        	while(1)
-	        	{
-	          		seek = ftell(fp);
-	          		if (fgets(buf, 256, fp) == NULL) break;
-	          		if (strstr(buf, "[5]") != NULL)
-	         	 	{
-	           		 	long len = filelength(fileno(fp))-ftell(fp);
-	            		char *tmp = (char *)malloc(len);
-	
-	       		        len = fread(tmp, 1, len, fp);
-	           
-			            fseek(fp, start, SEEK_SET);
-			            fwrite(tmp, 1, len, fp);
-			            fflush(fp);
-			            free(tmp);
-			            _chsize(fileno(fp), ftell(fp));
-	           			break;
-	          		} 
-	        	}
-	      	}	
+				if(feof(fp)!=0) break;
+				fgets(data,100,fp);
+				fputs(data,fp2);
+			}	
+			fclose(fp);
+			fclose(fp2);
+			
+			int sum = remove(old); 
+			int cnt = rename(n,old);
+			
+			if(sum == 0 && cnt == 0) {
+				printf("삭제 성공");
+			}
 		}else if(n==3){// 플레이 리스트 보는 기능
 			char chr[100]={0x00,};
 			FILE *in = fopen("C:/Users/SW2127/Desktop/all/make_me/algorithm/playlist.txt","r");
@@ -83,6 +103,7 @@ int main(){
 				fgets(chr, sizeof(chr), in);
 				printf("%s",chr);
 			}
+			fclose(in);
 			//printQ(q);
 		}else if(n==4){// 플레이 리스트 정렬하는 기능 
 			FILE *fp = fopen("C:/Users/SW2127/Desktop/all/make_me/algorithm/playlist.txt","r");
@@ -177,16 +198,3 @@ void freeQueue(Queue* q) {
 bool isEmpty(Queue* q) {
     return q->front == NULL;
 } 
-void sorted(char sort[])
-{
-	int i,temp;
-	for(i=0;i!=sort[i]!=NULL;i++)
-	{
-		if(sort[i]<sort[i+1])
-		{
-			temp = sort[i];
-			sort[i] = sort[i+1];
-			sort[i+1] = temp;
-		}
-	}
-}
